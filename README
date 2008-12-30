@@ -1,0 +1,11 @@
+Open Bridge Builder -- a python+pygame based remake of Bridge Builder
+
+Python2 and greater and pygame must be install
+
+Unix like Systems
+
+./start.y
+
+Windows
+
+python start.py
