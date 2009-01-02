@@ -57,6 +57,7 @@ class Game:
         self.c_rect = None
         self.t_rect = None
 
+        self.begintraeger = False
         self.catchpoint = (0,0)
         self.endcatchpoint = (0,0)
         self.drawcatchpoint = False
