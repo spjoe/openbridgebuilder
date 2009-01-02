@@ -63,6 +63,8 @@ class Game:
         self.colorcatchpoint = (0,0,0)
         self.buttondown = False
 
+        self.simulatemode = 0
+
         pygame.init()
 
         if not pygame.font: 
@@ -174,6 +176,12 @@ class Game:
                         self.upos = upos
                     else:
                         self.drawcatchpoint = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_r:
+                    self.simulatemode = ~self.simulatemode
+                    self.logger.debug(self.simulatemode)
+                else:
+                    self.common_event(event)
             else:
                 self.common_event(event)
     
@@ -195,22 +203,20 @@ class Game:
             self.zoomchanged = False
             self.InZoom = False
         else:
-            self.allSprites.clear(self.screen, self.background)
-            self.allSprites.draw(self.screen)# sollte mit dirty sein
+
             if self.c_rect != None:
                 self.screen.blit(self.background, self.c_rect, self.c_rect)
             if self.t_rect != None:
                 self.screen.blit(self.background, self.t_rect, self.t_rect)
 
-        if self.buttondown == True:
-            self.t_rect = pygame.draw.line(self.screen, (0,255,0), self.catchpoint,self.endcatchpoint)
-            #self.buttondown = False
-        
-        if self.drawcatchpoint == True:
-            self.c_rect = pygame.draw.circle(self.screen, self.colorcatchpoint , self.catchpoint, 4 * self.zoomfactor)
-    
-        
+            if self.buttondown == True:
+                self.t_rect = pygame.draw.line(self.screen, (0,255,0), self.catchpoint,self.endcatchpoint)
+            if self.drawcatchpoint == True:
+                self.c_rect = pygame.draw.circle(self.screen, self.colorcatchpoint , self.catchpoint, 4 * self.zoomfactor)
 
+            self.allSprites.clear(self.screen, self.background)
+            self.allSprites.draw(self.screen)# sollte mit dirty sein
+           
         pygame.display.flip()
 
 
@@ -419,6 +425,9 @@ class Traeger(pygame.sprite.DirtySprite):
         self.rect = self.image.get_rect()
         self.rect = game.backgroundgrid.GetBeamRect(self)
 
+        self.drehimpuls = 0
+        self.geschwindigkeitvektor = (0,0)
+
         game.logger.debug(self.image)
         game.logger.debug(self.rect)
         
@@ -440,6 +449,11 @@ class Traeger(pygame.sprite.DirtySprite):
         if(tmp_r != self.rect):
             self.game.logger.debug(self.image)
             self.game.logger.debug(self.rect)
+
+        if self.game.simulatemode != 0:
+            #self.game.logger.debug("test")
+            self.ustarty += 0.1
+            self.uendy += 0.1
 
         #self.game.isDirtyGroup.add(self)
 
