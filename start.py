@@ -55,10 +55,13 @@ class Game:
         self.InZoom = False
         self.gravity = 9.80665
         self.c_rect = None
+        self.t_rect = None
 
         self.catchpoint = (0,0)
+        self.endcatchpoint = (0,0)
         self.drawcatchpoint = False
         self.colorcatchpoint = (0,0,0)
+        self.buttondown = False
 
         pygame.init()
 
@@ -87,10 +90,20 @@ class Game:
        
         # Set Test Sprite #
         self.allSprites = pygame.sprite.Group()
-        self.testtraeger = Traeger(self,3 , 1, 1)
-        test2 = Traeger(self,5 , 1, 1)
+        self.testtraeger = Traeger(self,2 , 2, 3, 3)
+        test2 = Traeger(self,5 , 1, 8, 1)
+        test3 = Traeger(self,5 , 1, 5, 5)
+        test4 = Traeger(self,8 , 1, 8, 5)
+        test5 = Traeger(self,5 , 5, 8, 5)
+        test6 = Traeger(self,5 , 5, 8, 1)
+        test7 = Traeger(self,5,  1, 8, 5)
         self.allSprites.add(self.testtraeger)
         self.allSprites.add(test2)
+        self.allSprites.add(test3)
+        self.allSprites.add(test4)
+        self.allSprites.add(test5)
+        self.allSprites.add(test6)
+        self.allSprites.add(test7)
         self.isDirtyGroup = pygame.sprite.Group()
         self.isVisibleGroup = pygame.sprite.Group()
  
@@ -125,13 +138,29 @@ class Game:
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1:
                     if self.begintraeger == True:
-                        self.allSprites.add(Traeger(self,self.upos[0] , self.upos[1], 1))
+                        self.buttondown = False
+                        self.allSprites.add(Traeger(self,self.upos[0] , self.upos[1], self.endupos[0], self.endupos[1]))
+                else:
+                    self.common_event(event)
+                
             elif event.type == MOUSEMOTION:
                 if event.buttons[2] == 1 or event.buttons[1]:
                     self.backgroundgrid.translate(event.rel)
                     self.zoomchanged = True
                 elif event.buttons[0] == 1:
-                    pass
+                    tmp = self.backgroundgrid.InGridCatch(event.pos)
+                    isIn = tmp[0]
+                    pos = tmp[1]
+                    col = tmp[2]
+                    upos = tmp[3]
+                    if isIn == True and self.begintraeger == True:
+                        self.endcatchpoint = pos
+                        self.drawcatchpoint = True
+                        self.colorcatchpoint = col
+                        self.endupos = upos
+                        self.buttondown = True
+                    else:
+                        self.drawcatchpoint = False
                 else:
                     tmp = self.backgroundgrid.InGridCatch(event.pos)
                     isIn = tmp[0]
@@ -170,9 +199,17 @@ class Game:
             self.allSprites.draw(self.screen)# sollte mit dirty sein
             if self.c_rect != None:
                 self.screen.blit(self.background, self.c_rect, self.c_rect)
+            if self.t_rect != None:
+                self.screen.blit(self.background, self.t_rect, self.t_rect)
+
+        if self.buttondown == True:
+            self.t_rect = pygame.draw.line(self.screen, (0,255,0), self.catchpoint,self.endcatchpoint)
+            #self.buttondown = False
         
         if self.drawcatchpoint == True:
             self.c_rect = pygame.draw.circle(self.screen, self.colorcatchpoint , self.catchpoint, 4 * self.zoomfactor)
+    
+        
 
         pygame.display.flip()
 
@@ -277,20 +314,55 @@ class BackgroundGrid:
     def GetBeamRect(self, t):
         tmp_rect = t.rect
         tmp_rect.topleft =  self.pfirstBendx \
-                              + t.x \
+                              + min(t.ustartx, t.uendx) \
                               * BackgroundGrid.pUNITSIZE_X \
                               * self.zoomfactor \
                           , self.pfirstBendy  \
-                              + t.y \
+                              + min(t.ustarty, t.uendy) \
                               * BackgroundGrid.pUNITSIZE_Y \
                               * self.zoomfactor
 
-        tmp_rect.width = t.length \
+        tmp_rect.width = t.uwidth \
                          * BackgroundGrid.pUNITSIZE_X \
                          * self.zoomfactor
-        tmp_rect.height = Traeger.T_HEIGHT \
+        tmp_rect.height = t.uheight \
                           * self.zoomfactor
         return tmp_rect
+    
+
+    def GetImage(self,t):
+
+        if t.uwidth == 0:
+            image = pygame\
+                .Surface([Traeger.T_HEIGHT * t.game.zoomfactor \
+                          , t.uheight * BackgroundGrid.pUNITSIZE_Y * t.game.zoomfactor]) \
+                .convert()
+            image.fill((0,255,0))
+            return image
+
+        if t.uheight == 0:
+            image = pygame\
+                .Surface([t.uwidth * BackgroundGrid.pUNITSIZE_X * t.game.zoomfactor \
+                          , Traeger.T_HEIGHT * t.game.zoomfactor]) \
+                .convert()
+            image.fill((0,255,0))
+            return image
+            
+        image = pygame\
+            .Surface([t.uwidth * BackgroundGrid.pUNITSIZE_X * t.game.zoomfactor \
+                      , t.uheight * BackgroundGrid.pUNITSIZE_Y * t.game.zoomfactor]) \
+            .convert()
+        image.set_colorkey((0,0,0))
+        image.fill((0,0,0))
+
+        if(t.ustartx < t.uendx and t.ustarty < t.uendy) or (t.ustartx > t.uendx and t.ustarty > t.uendy):
+            pygame.draw.line(image, (0,255,0) ,(0,0),(image.get_rect().width, image.get_rect().height), 5)
+        else:
+            pygame.draw.line(image, (0,255,0) ,(0,image.get_rect().height),(image.get_rect().width,0 ), 5)
+
+        return image
+        
+
     def InGridCatch(self,ppos):
         pposX = ppos[0]
         pposY = ppos[1]
@@ -330,32 +402,44 @@ class Traeger(pygame.sprite.DirtySprite):
 
     T_HEIGHT = 5
 
-    def __init__(self, game, x, y,  length):
+    def __init__(self, game, ustartx, ustarty,  uendx, uendy):
         pygame.sprite.DirtySprite.__init__(self)
 
-        self.image = pygame\
-            .Surface([length * BackgroundGrid.pUNITSIZE_X * game.zoomfactor \
-                      , Traeger.T_HEIGHT * game.zoomfactor]) \
-            .convert()
 
-        self.image.fill([0,255,0])
-        self.rect = self.image.get_rect()
         self.game = game
-        self.length = length
-        self.x = x
-        self.y = y
+
+        self.ustartx = ustartx
+        self.ustarty = ustarty
+        self.uendx = uendx
+        self.uendy = uendy
+        self.uwidth = abs ( max(ustartx,uendx) - min(ustartx, uendx) )
+        self.uheight = abs ( max(ustarty,uendy) - min(ustarty, uendy) )
+        self.image = game.backgroundgrid.GetImage(self)
+        
+        self.rect = self.image.get_rect()
         self.rect = game.backgroundgrid.GetBeamRect(self)
+
+        game.logger.debug(self.image)
+        game.logger.debug(self.rect)
+        
+        
     
     def update(self):
+        pass
         #self.y += 0.02
 
         #if self.y > Game.SCREEN_H:
         #    self.y = 0
+
+        tmp_r = self.rect
         
-        self.image = pygame.transform.scale(self.image, \
-        (self.length * BackgroundGrid.pUNITSIZE_X * self.game.zoomfactor, \
-        Traeger.T_HEIGHT * self.game.zoomfactor))
+        self.image = game.backgroundgrid.GetImage(self)
         self.rect = game.backgroundgrid.GetBeamRect(self)
+        #self.game.logger.debug(self.image)
+        #self.game.logger.debug(self.rect)
+        if(tmp_r != self.rect):
+            self.game.logger.debug(self.image)
+            self.game.logger.debug(self.rect)
 
         #self.game.isDirtyGroup.add(self)
 
