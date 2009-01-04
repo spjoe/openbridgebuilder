@@ -100,13 +100,13 @@ class Game:
         test5 = Traeger(self,5 , 5, 8, 5)
         test6 = Traeger(self,5 , 5, 8, 1)
         test7 = Traeger(self,5,  1, 8, 5)
-        self.allSprites.add(self.testtraeger)
-        self.allSprites.add(test2)
-        self.allSprites.add(test3)
-        self.allSprites.add(test4)
-        self.allSprites.add(test5)
-        self.allSprites.add(test6)
-        self.allSprites.add(test7)
+        #self.allSprites.add(self.testtraeger)
+        #self.allSprites.add(test2)
+        #self.allSprites.add(test3)
+        #self.allSprites.add(test4)
+        #self.allSprites.add(test5)
+        #self.allSprites.add(test6)
+        #self.allSprites.add(test7)
         self.isDirtyGroup = pygame.sprite.Group()
         self.isVisibleGroup = pygame.sprite.Group()
  
@@ -427,7 +427,11 @@ class Traeger(pygame.sprite.DirtySprite):
         self.rect = game.backgroundgrid.GetBeamRect(self)
 
         self.drehimpuls = 0
-        self.geschwindigkeitvektor = (0,0)
+        self.geschwindigkeitvektor = [0,0]
+
+        self.oldtickets = pygame.time.get_ticks()
+        self.newtickets = pygame.time.get_ticks()
+        self.pasttime = self.newtickets - self.oldtickets
 
         game.logger.debug(self.image)
         game.logger.debug(self.rect)
@@ -435,7 +439,6 @@ class Traeger(pygame.sprite.DirtySprite):
         
     
     def update(self):
-        pass
         #self.y += 0.02
 
         #if self.y > Game.SCREEN_H:
@@ -451,11 +454,33 @@ class Traeger(pygame.sprite.DirtySprite):
             self.game.logger.debug(self.image)
             self.game.logger.debug(self.rect)
 
-        if self.game.simulatemode != 0:
-            #self.game.logger.debug("test")
-            self.ustarty += 0.1
-            self.uendy += 0.1
 
+        
+
+        if self.game.simulatemode != 0:
+            self.newtickets = pygame.time.get_ticks()
+            self.pasttime = self.newtickets - self.oldtickets
+            if self.pasttime > 0:
+                speed = self.game.gravity * (self.pasttime / 1000.0)
+                self.geschwindigkeitvektor[1] += speed
+                sec = self.pasttime / 1000.0
+
+                dx = ( self.geschwindigkeitvektor[0] / 5 ) * sec
+                dy = ( self.geschwindigkeitvektor[1] / 5 ) * sec
+                self.game.logger.debug( self.geschwindigkeitvektor[1])
+
+            
+                self.ustartx += dx
+                self.uendx += dx
+                self.ustarty += dy
+                self.uendy += dy
+                self.oldtickets = self.newtickets
+        else:
+            self.newtickets = pygame.time.get_ticks()
+            self.oldtickets = self.newtickets
+            
+
+        
         #self.game.isDirtyGroup.add(self)
 
         #self.game.logger.debug(self.rect.width)
