@@ -251,6 +251,9 @@ class BackgroundGrid:
     COLOR = 130, 130, 130
     COLOR_SMALL = 70,70,70
 
+    rUNITSIZE_X = 5 # ein Unit = 5 meter
+    rUNITSIZE_Y = 5
+
     def __init__(self):
         self.pfirstBendx = -400
         self.pfirstBendy = -200 #p for Pixel u for Unit
@@ -427,7 +430,11 @@ class Traeger(pygame.sprite.DirtySprite):
         self.rect = game.backgroundgrid.GetBeamRect(self)
 
         self.drehimpuls = 0
-        self.geschwindigkeitvektor = [0,0]
+        self.dichte = 7,874 #g/cm3 = kg/dm3
+        self.traegheitstensor = ( ((self.dichte*1000) * (16.0/3.0) * (self.uwidth / BackgroundGrid.rUNITSIZE_X)**5, 0) ,\
+                                  (0 , (self.dichte*1000) * (16.0/3.0) * (self.uheight / BackgroundGrid.rUNITSIZE_X)**5 ) )
+        self.winkelgeschwindigkeit = 0
+        self.geschwindigkeitvektor = [0,0] #(m/s, m/s)
 
         self.oldtickets = pygame.time.get_ticks()
         self.newtickets = pygame.time.get_ticks()
@@ -461,12 +468,13 @@ class Traeger(pygame.sprite.DirtySprite):
             self.newtickets = pygame.time.get_ticks()
             self.pasttime = self.newtickets - self.oldtickets
             if self.pasttime > 0:
-                speed = self.game.gravity * (self.pasttime / 1000.0)
-                self.geschwindigkeitvektor[1] += speed
                 sec = self.pasttime / 1000.0
+                speed = self.game.gravity * sec # m/s
+                self.geschwindigkeitvektor[1] += speed
+                
 
-                dx = ( self.geschwindigkeitvektor[0] / 5 ) * sec
-                dy = ( self.geschwindigkeitvektor[1] / 5 ) * sec
+                dx = ( self.geschwindigkeitvektor[0] / BackgroundGrid.rUNITSIZE_X ) * sec
+                dy = ( self.geschwindigkeitvektor[1] / BackgroundGrid.rUNITSIZE_Y ) * sec
                 self.game.logger.debug( self.geschwindigkeitvektor[1])
 
             
@@ -474,6 +482,8 @@ class Traeger(pygame.sprite.DirtySprite):
                 self.uendx += dx
                 self.ustarty += dy
                 self.uendy += dy
+                self.uwidth  = abs ( max(self.ustartx,self.uendx) - min(self.ustartx, self.uendx) )
+                self.uheight = abs ( max(self.ustarty,self.uendy) - min(self.ustarty, self.uendy) )
                 self.oldtickets = self.newtickets
         else:
             self.newtickets = pygame.time.get_ticks()
