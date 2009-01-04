@@ -24,6 +24,7 @@ USA
 
 
 import pygame
+import pymunk as pm
 import sys
 import os
 import logging
@@ -67,6 +68,8 @@ class Game:
         self.simulatemode = 0
 
         pygame.init()
+        pm.init_pymunk() 
+
 
         if not pygame.font: 
             logger.warning( 'fonts disabled' )
@@ -431,8 +434,8 @@ class Traeger(pygame.sprite.DirtySprite):
 
         self.drehimpuls = 0
         self.dichte = 7,874 #g/cm3 = kg/dm3
-        self.traegheitstensor = ( ((self.dichte*1000) * (16.0/3.0) * (self.uwidth / BackgroundGrid.rUNITSIZE_X)**5, 0) ,\
-                                  (0 , (self.dichte*1000) * (16.0/3.0) * (self.uheight / BackgroundGrid.rUNITSIZE_X)**5 ) )
+        #self.traegheitstensor = ( ((self.dichte*1000) * (16.0/3.0) * (self.uwidth / BackgroundGrid.rUNITSIZE_X)**5, 0) ,\
+        #                          (0 , (self.dichte*1000) * (16.0/3.0) * (self.uheight / BackgroundGrid.rUNITSIZE_X)**5 ) )
         self.winkelgeschwindigkeit = 0
         self.geschwindigkeitvektor = [0,0] #(m/s, m/s)
 
