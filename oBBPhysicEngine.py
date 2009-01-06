@@ -27,6 +27,8 @@ from pygame.color import *
 
 import pymunk as pm
 import pymunk.util as util
+import logging
+import oBBConfig as conf
 from pymunk import Vec2d
 
 from os import chdir
@@ -99,8 +101,12 @@ class PhysicEngine:
 		    Parameter: gravity == (int(x), int(y))
 		    Returns: pymunx()
 		"""
-		self.run_physics = True 
+		self.logger = logging.getLogger('DrawEngine')
+		self.logger.setLevel(conf.DEVELOPMENT.LOGGINGLEVEL)
+
+		self.run_physics = False
 		self.gravity = gravity
+
 		
 		# Python Stuff
 	        self.font = pygame.font.Font(None, 32)
@@ -305,8 +311,8 @@ class PhysicEngine:
 			
 		try:
 			x,y,w,h = pygame.display.get_surface().get_rect()
-			self.display_width = w
-			self.display_height = h
+			self.display_width = conf.GAME_CONFIG.PYMUNK_SIZEX
+			self.display_height = conf.GAME_CONFIG.PYMUNK_SIZEY
 		except:
 			print "pymunx Error: Please start pygame.init() before loading pymunx"
 			exit(0)

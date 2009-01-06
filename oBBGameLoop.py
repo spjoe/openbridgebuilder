@@ -35,12 +35,6 @@ import oBBConfig as conf
 #############################Game Class Muhaha!################################
 ###############################################################################
 class Game:
-    
-    FRAME_RATE = 60
-
-    SCREEN_W = 640
-    SCREEN_H = 480
-
     def __init__(self):
 
         self.logger = logging.getLogger('GameLoop')
@@ -59,20 +53,27 @@ class Game:
 
         ### Physics Engine
         self.physicengine = oBBPhysicEngine.PhysicEngine(conf.GAME_CONFIG.GRAVITY)
+        self.physicengine.run_physics = False
+        self.physicengine.set_info("Test")
 
         ### Testobjekte
-        self.beams = []
-
-        vertices = [(100.0, 300.0),(100,330),(200,330),(200,300)]
-        beam = self.physicengine.add_poly(vertices)        
-        self.beams.append(beam)
-
         self.walls = []
 
-        wall = self.physicengine.add_wall((111.0, 280.0), (407.0, 246.0))
+        wall = self.physicengine.add_wall((111.0, 280.0), (407.0, 300.0))
         self.walls.append(wall)
-        wall = self.physicengine.add_wall((407.0, 246.0), (407.0, 343.0))
+        wall = self.physicengine.add_wall((407.0, 300.0), (407.0, 200.0))
         self.walls.append(wall)
+
+
+        self.beams = []
+
+        self.vertices = [(10.0, 30.0),(10.0,60.0),(100.0,60.0),(100.0,30.0),(10.0, 30.0)]
+        self.vertices2 = [(10.0, 30.0), (100.0,30.0),(100.0,60.0),(10.0,60.0),(10.0, 30.0)]
+        #vertices2 = [(100.0, 330.0),(100.0,300.0),(200.0,300.0),(200.0,330.0),(100.0,330.0)]
+        beam = self.physicengine.add_poly(self.vertices)        
+        self.beams.append(beam)
+
+        
 
         self.Change = False
         self.GetInputfn = self.CommonGetInput
@@ -106,6 +107,9 @@ class Game:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_IN,event.pos)
                 elif event.button == conf.INPUT_CONFIG.ZOOM_OUT_MOUSE:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
+                elif event.button == 1:
+				    self.physicengine.add_ball(event.pos)
+				    self.physicengine.add_poly(self.vertices2)
                 else:
                     self.common_event(event)
             elif event.type == MOUSEMOTION:
@@ -119,7 +123,7 @@ class Game:
                 elif event.key == conf.INPUT_CONFIG.ZOOM_OUT_KEY:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
                 elif event.key == conf.INPUT_CONFIG.SIMULATE_ON_OFF:
-                    self.simulate = not self.simulate
+                    self.physicengine.run_physics = not self.physicengine.run_physics
                 elif event.key == conf.INPUT_CONFIG.START_TRAIN:
                     self.starttrain = True
                 else:
@@ -138,9 +142,22 @@ class Game:
             self.GetInputfn()
             #self.Movefn()
             #self.CollisionDetectionfn()
-            self.drawengine.common_draw(self.beams,self.walls)
-            if self.simulate == True:
-                self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
+            #self.drawengine.common_draw(self.beams,self.walls)
+            self.drawengine.screen.fill((255,255,255))
+            self.drawengine.physicscreen.fill((70,70,70))
+            self.physicengine.update(400, 1)
+            
+            self.physicengine.draw(self.drawengine.physicscreen)
+            self.drawengine.drawphysic(self.drawengine.physicscreen)
+
+            pygame.display.flip()
+            
+            pygame.display.set_caption("elements: %i | fps: %s" % 
+                (self.physicengine.get_element_count(), 
+                str(int(self.drawengine.clock.get_fps()))))
+
+            
+
             #self.Changefn()
             
         pygame.quit()

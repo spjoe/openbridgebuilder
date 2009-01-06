@@ -46,7 +46,8 @@ class DrawEngine:
         pygame.init()
         self.screen = pygame.display.set_mode(screen_size)
         self.background = pygame.Surface(screen_size).convert()
-        self.background.fill([0,0,0])
+        self.background.fill([255,255,255])
+        self.physicscreen = pygame.Surface((conf.GAME_CONFIG.PYMUNK_SIZEX,conf.GAME_CONFIG.PYMUNK_SIZEY)).convert()
 
         self.clock = pygame.time.Clock()
 
@@ -65,7 +66,7 @@ class DrawEngine:
 
     def position_to_pygame(self,p):
         """Small hack to convert pymunk to pygame coordinates"""
-        return int(p.x * self.zoomfactor + self.xverschiebung), int(-p.y * self.zoomfactor + self.screen_height + self.yverschiebung)
+        return int(p.x * self.zoomfactor + self.xverschiebung), int(p.y * self.zoomfactor + self.yverschiebung)
 
     def points_to_pygame(self,points):
         newpoints = []
@@ -82,6 +83,7 @@ class DrawEngine:
     def draw_physic_beams(self, beams):
         for beam in beams:            points = self.points_to_pygame(beam.get_points())
             self.draw_physic_poly(points,(0,255,0))
+            self.logger.debug(points)
 
     def draw_physic_static(self, static_lines):
         for line in static_lines:
@@ -97,13 +99,17 @@ class DrawEngine:
         for rect in rects:
             self.screen.blit(self.background,rect,rect)
 
+    def drawphysic(self,surface):
+        ns = pygame.transform.scale(surface,\
+                (conf.GAME_CONFIG.PYMUNK_SIZEX*self.zoomfactor,\
+                conf.GAME_CONFIG.PYMUNK_SIZEY*self.zoomfactor))
+        self.screen.blit(ns, (self.xverschiebung,self.yverschiebung))
+
     def common_draw(self,beams,static):
         self.clear_rects(self.rects)
         self.rects = []
-        self.draw_physic_beams(beams)
-        self.draw_physic_static(static)
-        self.flip()
-        pygame.display.set_caption("fps: " + str(self.clock.get_fps()))
+        #self.draw_physic_beams(beams)
+        #self.draw_physic_static(static)
         self.clock.tick(conf.SCREEN_CONFIG.FRAMERATE)
     def flip(self):
         pygame.display.flip()

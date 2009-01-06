@@ -36,6 +36,9 @@ class GAME_CONFIG:
     YVERSCHIEBUNG   =   0.0
     PYMUNK_STEPS    =   1
     GRAVITY         =   (0.0, -900.0)
+    PYMUNK_SIZEX    =   1000
+    PYMUNK_SIZEY    =   1000
+    
 
 class INPUT_CONFIG:
     ZOOM_IN_MOUSE   =   4 #scroll up
