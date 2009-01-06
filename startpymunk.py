@@ -51,6 +51,7 @@ class Game:
         mass = 10
         offset = Vec2d(0.0,0.0)
         self.vertices = [(100.0, 300.0),(100,330),(200,330),(200,300)]
+        #self.vertices = [(100.0, 330.0),(100,300),(200,300),(200,330),(100,330)]
         inertia = pm.moment_for_poly(mass, self.vertices, offset)
         body = pm.Body(mass, inertia)
         x = random.randint(115,350)
