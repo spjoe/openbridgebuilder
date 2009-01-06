@@ -60,13 +60,15 @@ class DrawEngine:
         self.yverschiebung += rel[1]
 
     def zoom(self, delta, pos):
-        self.zoomfactor += delta   
+        if delta < 0 and self.zoomfactor <= 0.4:
+            return
+        self.zoomfactor += delta  
 
     def clear(self):
         self.screen.fill([0,0,0])
         self.flip()
 
-    def draw_balls(self, balls):
+    def draw_balls(self, balls, width=3):
         for shape in balls:
 			# Get Ball Infos
 			r = shape.radius * self.zoomfactor
@@ -75,7 +77,7 @@ class DrawEngine:
 		
 			# Draw Ball
 			#p = int(), int(self.flipy(v.y))
-			self.rects.append(pygame.draw.circle(self.screen, shape.color, p, int(r), 3))
+			self.rects.append(pygame.draw.circle(self.screen, shape.color, p, int(r), width))
 	
 			# Draw Rotation Vector
 			p2 = Vec2d(rot.x, -rot.y) * r * 0.9
@@ -112,16 +114,20 @@ class DrawEngine:
         for i in range(-10000,10000,100):
             pX = self.xverschiebung + i * self.zoomfactor
             if pX > 0 and pX < conf.SCREEN_CONFIG.SCREEN_W:
+                width = 2
+                if i == 0: width = 4
                 self.rects.append(pygame.draw.line(self.screen, \
                                 (0,0,0), \
-                                (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),2 ))
+                                (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),width ))
 
         for i in range(-10000,10000,100):
-            pY = self.yverschiebung + i * self.zoomfactor
+            pY = int(i * self.zoomfactor + self.screen_height + self.yverschiebung)
             if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
+                width = 2
+                if i == 0: width = 4
                 self.rects.append(pygame.draw.line(self.screen, \
                                 (0,0,0), \
-                                (0,pY),(conf.SCREEN_CONFIG.SCREEN_W,pY),2 ))
+                                (0,pY),(conf.SCREEN_CONFIG.SCREEN_W,pY),width ))
 
         for i in range(-10000,10000,10):
             pX = self.xverschiebung + i * self.zoomfactor
@@ -131,7 +137,7 @@ class DrawEngine:
                                 (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),1 ))
 
         for i in range(-10000,10000,10):
-            pY = self.yverschiebung + i * self.zoomfactor
+            pY = int(i * self.zoomfactor + self.screen_height + self.yverschiebung)
             if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
                 self.rects.append(pygame.draw.line(self.screen, \
                                 (0,0,0), \
@@ -158,7 +164,7 @@ class DrawEngine:
                 conf.GAME_CONFIG.PYMUNK_SIZEY*self.zoomfactor))
         self.screen.blit(ns, (self.xverschiebung,self.yverschiebung))
 
-    def common_draw(self,beams,static,balls):
+    def common_draw(self,beams,static,balls,achsen):
         self.clear_rects(self.rects)
         self.rects = []
         self.draw_grid()
@@ -166,6 +172,7 @@ class DrawEngine:
         self.draw_physic_static(static)
         #self.draw_physic_static(beams)
         self.draw_balls(balls)
+        self.draw_balls(achsen, 0)
         
     def flip(self):
         self.clock.tick(conf.SCREEN_CONFIG.FRAMERATE)

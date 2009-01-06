@@ -85,19 +85,23 @@ class Game:
         self.walls = []
         self.beams = []
         self.balls = []
+        self.achsen = []
         self.physicengine.clear()
    
     def load_level_1(self):
         self.clear()
-        wall = self.physicengine.add_wall((-1000.0, 50.0), (-50.0, 50.0))
+        wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
         self.walls.append(wall)
         wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 100.0))
         self.walls.append(wall)
         wall = self.physicengine.add_wall((100.0, 100.0), (250.0, 50.0))
         self.walls.append(wall)
-        wall = self.physicengine.add_wall((250.0, 50.0), (1000.0, 50.0))
+        wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
         self.walls.append(wall)
-        pass
+        achse = self.physicengine.add_achse((-50.0, 50.0))
+        self.achsen.append(achse)
+        achse = self.physicengine.add_achse((250.0, 50.0))
+        self.achsen.append(achse)
     
     def coll_func(self,shapeA, shapeB, contacts, normal_coef, screen):
         """Draw a circle at the contact, with larger radius for greater collisions"""
@@ -169,7 +173,7 @@ class Game:
         while not self.quit:
             self.GetInputfn()
             
-            self.drawengine.common_draw(self.beams,self.walls,self.balls)
+            self.drawengine.common_draw(self.beams,self.walls,self.balls, self.achsen)
             self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
 
             self.drawengine.flip()
