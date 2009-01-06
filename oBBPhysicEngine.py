@@ -101,7 +101,7 @@ class PhysicEngine:
 		    Parameter: gravity == (int(x), int(y))
 		    Returns: pymunx()
 		"""
-		self.logger = logging.getLogger('DrawEngine')
+		self.logger = logging.getLogger('PhysicEngine')
 		self.logger.setLevel(conf.DEVELOPMENT.LOGGINGLEVEL)
 
 		self.run_physics = False
@@ -531,8 +531,12 @@ class PhysicEngine:
 		
 		U, A = util.get_poly_UA(poly_points_center)
 		A *= 2.5 	# get_poly_UA is not working properly with the area :)
+		A = U / 2
 		mass = A * density
-		
+		self.logger.debug("points:" + str( poly_points_center))
+		self.logger.debug("U:" + str(U))
+		self.logger.debug("A:" + str(A))
+		self.logger.debug("mass:" + str(mass))
 		# Calculate A Good Momentum
 		moment = pm.moment_for_poly(mass, poly_points_center, Vec2d(0,0))
 

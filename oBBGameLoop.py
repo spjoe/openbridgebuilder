@@ -42,6 +42,7 @@ class Game:
 
         self.quit = False
         self.simulate = False
+        self.drawbeam = False
 
         #Draw Engine
         size = conf.SCREEN_CONFIG.SCREEN_W, conf.SCREEN_CONFIG.SCREEN_H
@@ -53,7 +54,6 @@ class Game:
 
         ### Physics Engine
         self.physicengine = oBBPhysicEngine.PhysicEngine(conf.GAME_CONFIG.GRAVITY)
-        self.physicengine.run_physics = False
         self.physicengine.set_info("Test")
 
         ### Testobjekte
@@ -70,20 +70,34 @@ class Game:
         self.vertices = [(10.0, 30.0),(10.0,60.0),(100.0,60.0),(100.0,30.0),(10.0, 30.0)]
         self.vertices2 = [(10.0, 30.0), (100.0,30.0),(100.0,60.0),(10.0,60.0),(10.0, 30.0)]
         #vertices2 = [(100.0, 330.0),(100.0,300.0),(200.0,300.0),(200.0,330.0),(100.0,330.0)]
-        beam = self.physicengine.add_poly(self.vertices)        
-        self.beams.append(beam)
+        #beam = self.physicengine.add_poly(self.vertices2)        
+        #self.beams.append(beam)
 
         self.balls = []
-
-        
+        self.load_level_1()
 
         self.Change = False
         self.GetInputfn = self.CommonGetInput
         #self.Movefn = self.CommonMove
         #self.CollisionDetectionfn = self.CommonCollisonDetection
         #self.Drawfn = self.CommonDraw
+    def clear(self):
+        self.walls = []
+        self.beams = []
+        self.balls = []
+        self.physicengine.clear()
    
-        
+    def load_level_1(self):
+        self.clear()
+        wall = self.physicengine.add_wall((-1000.0, 50.0), (-50.0, 50.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 100.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((100.0, 100.0), (250.0, 50.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((250.0, 50.0), (1000.0, 50.0))
+        self.walls.append(wall)
+        pass
     
     def coll_func(self,shapeA, shapeB, contacts, normal_coef, screen):
         """Draw a circle at the contact, with larger radius for greater collisions"""
@@ -110,11 +124,22 @@ class Game:
                 elif event.button == conf.INPUT_CONFIG.ZOOM_OUT_MOUSE:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
                 elif event.button == 1:
-				    ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
-				    self.balls.append(ball)
-				    self.physicengine.add_poly(self.vertices2)
+                    ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
+                    self.balls.append(ball)
+                    #beam = self.physicengine.add_poly(self.vertices2)
+                    #self.beams.append(beam)
+                    self.drawbeam = True
+                    self.anpos = self.drawengine.position_to_pymunk(event.pos)
                 else:
                     self.common_event(event)
+            elif event.type == MOUSEBUTTONUP:
+                if event.button == 1 and self.drawbeam:
+                    endpos = self.drawengine.position_to_pymunk(event.pos)
+                    p2 = self.anpos[0] , self.anpos[1] + 5
+                    p3 = endpos[0], endpos[1] + 5
+                    beam = self.physicengine.add_poly((self.anpos, p2, p3 , endpos))
+                    self.beams.append(beam)
+                    
             elif event.type == MOUSEMOTION:
                 if event.buttons[2] == 1 or event.buttons[1] == 1:
                     self.drawengine.translate(event.rel)
@@ -144,10 +169,8 @@ class Game:
         while not self.quit:
             self.GetInputfn()
             
-            #self.drawengine.screen.fill((255,255,255))
             self.drawengine.common_draw(self.beams,self.walls,self.balls)
-            self.physicengine.update(60, 5)
-
+            self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
 
             self.drawengine.flip()
             

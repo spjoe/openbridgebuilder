@@ -32,9 +32,9 @@ class SCREEN_CONFIG:
 class GAME_CONFIG:
     SPEED           =   1.0
     ZOOM_START      =   1.0
-    XVERSCHIEBUNG   =   0.0
-    YVERSCHIEBUNG   =   0.0
-    PYMUNK_STEPS    =   1
+    XVERSCHIEBUNG   =   320
+    YVERSCHIEBUNG   =   300
+    PYMUNK_STEPS    =   5
     GRAVITY         =   (0.0, -900.0)
     PYMUNK_topleft       =   -10000, -10000
     PYMUNK_bottomright   =   10000, 100000

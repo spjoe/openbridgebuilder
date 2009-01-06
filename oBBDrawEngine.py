@@ -115,11 +115,7 @@ class DrawEngine:
                 self.rects.append(pygame.draw.line(self.screen, \
                                 (0,0,0), \
                                 (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),2 ))
-                #for j in range (1, 10, 2):
-                 #   X = pX - j * self.zoomfactor
-                  #  pygame.draw.line(self.screen, \
-                   #                 (0,0,0), \
-                    #                (X ,0),(X,conf.SCREEN_CONFIG.SCREEN_H),1 )
+
         for i in range(-10000,10000,100):
             pY = self.yverschiebung + i * self.zoomfactor
             if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
@@ -133,11 +129,7 @@ class DrawEngine:
                 self.rects.append(pygame.draw.line(self.screen, \
                                 (0,0,0), \
                                 (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),1 ))
-                #for j in range (1, 10, 2):
-                 #   X = pX - j * self.zoomfactor
-                  #  pygame.draw.line(self.screen, \
-                   #                 (0,0,0), \
-                    #                (X ,0),(X,conf.SCREEN_CONFIG.SCREEN_H),1 )
+
         for i in range(-10000,10000,10):
             pY = self.yverschiebung + i * self.zoomfactor
             if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
@@ -154,7 +146,7 @@ class DrawEngine:
                 p1 = self.position_to_pygame(pv1)
                 p2 = self.position_to_pygame(pv2)
                 
-                self.rects.append(pygame.draw.lines(self.screen, THECOLORS["lightgray"], False, [p1,p2]))
+                self.rects.append(pygame.draw.lines(self.screen, THECOLORS["lightgray"], False, [p1,p2],3))
 
     def clear_rects(self, rects):
         for rect in rects:
@@ -172,6 +164,7 @@ class DrawEngine:
         self.draw_grid()
         self.draw_physic_beams(beams)
         self.draw_physic_static(static)
+        #self.draw_physic_static(beams)
         self.draw_balls(balls)
         
     def flip(self):
