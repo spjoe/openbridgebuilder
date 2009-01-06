@@ -257,6 +257,7 @@ class PhysicEngine:
 		"""
 		self.messagebox_hide()
 		self.run_physics = True
+        
 		
 	def save_surface(self, surface, fn='surface', ext='tga'):
 		""" Saves a surface to a local file
@@ -311,20 +312,22 @@ class PhysicEngine:
 			
 		try:
 			x,y,w,h = pygame.display.get_surface().get_rect()
-			self.display_width = conf.GAME_CONFIG.PYMUNK_SIZEX
-			self.display_height = conf.GAME_CONFIG.PYMUNK_SIZEY
+			self.display_width = w
+			self.display_height = h
 		except:
 			print "pymunx Error: Please start pygame.init() before loading pymunx"
 			exit(0)
 
-	def is_inside(self, pos, tolerance=3000):
+	def is_inside(self, pos):
 		""" Check if pos is inside screen + tolerance
 		    Parameter: pos == (int(x), int(y))
-		    Optional: tolerance == int(pixels)
 		    Returns: True if inside, False if outside
 		"""
 		x, y = pos
-		if x < -tolerance or x > self.display_width+tolerance or y < -tolerance or y > self.display_height+tolerance:
+		if x < conf.GAME_CONFIG.PYMUNK_topleft[0] or \
+           y < conf.GAME_CONFIG.PYMUNK_topleft[1] or \
+           x > conf.GAME_CONFIG.PYMUNK_bottomright[0] or \
+           y > conf.GAME_CONFIG.PYMUNK_bottomright[1]:
 			return False
 		else:
 			return True

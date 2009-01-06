@@ -26,6 +26,7 @@ from pygame.color import *
 import math, sys, random
 import logging
 import oBBConfig as conf
+from pymunk import Vec2d
 
 
 class DrawEngine:
@@ -46,8 +47,9 @@ class DrawEngine:
         pygame.init()
         self.screen = pygame.display.set_mode(screen_size)
         self.background = pygame.Surface(screen_size).convert()
-        self.background.fill([255,255,255])
-        self.physicscreen = pygame.Surface((conf.GAME_CONFIG.PYMUNK_SIZEX,conf.GAME_CONFIG.PYMUNK_SIZEY)).convert()
+        self.background.fill([80,80,80])
+        self.screen.blit(self.background, self.background.get_rect())
+        #self.physicscreen = pygame.Surface((conf.GAME_CONFIG.PYMUNK_SIZEX,conf.GAME_CONFIG.PYMUNK_SIZEY)).convert()
 
         self.clock = pygame.time.Clock()
 
@@ -64,9 +66,24 @@ class DrawEngine:
         self.screen.fill([0,0,0])
         self.flip()
 
+    def draw_balls(self, balls):
+        for shape in balls:
+			# Get Ball Infos
+			r = shape.radius * self.zoomfactor
+			p = self.position_to_pygame(shape.body.position)
+			rot = shape.body.rotation_vector
+		
+			# Draw Ball
+			#p = int(), int(self.flipy(v.y))
+			self.rects.append(pygame.draw.circle(self.screen, shape.color, p, int(r), 3))
+	
+			# Draw Rotation Vector
+			p2 = Vec2d(rot.x, -rot.y) * r * 0.9
+			pygame.draw.aaline(self.screen, shape.color2, p, p+p2, 2)
+
     def position_to_pygame(self,p):
         """Small hack to convert pymunk to pygame coordinates"""
-        return int(p.x * self.zoomfactor + self.xverschiebung), int(p.y * self.zoomfactor + self.yverschiebung)
+        return int(p.x * self.zoomfactor + self.xverschiebung), int(-p.y * self.zoomfactor + self.screen_height + self.yverschiebung)
 
     def points_to_pygame(self,points):
         newpoints = []
@@ -76,6 +93,11 @@ class DrawEngine:
             newpoints.append(newpoint)
         return newpoints
 
+    def position_to_pymunk(self,pos):
+        x = (pos[0] - self.xverschiebung) / self.zoomfactor
+        y = ((pos[1] - self.yverschiebung - self.screen_height) / self.zoomfactor)
+        return x,y + self.screen_height
+
     def draw_physic_poly(self,points,color):
         newpoints = self.points_to_pygame(points)
         self.rects.append(pygame.draw.polygon(self.screen, color,points ))
@@ -83,7 +105,46 @@ class DrawEngine:
     def draw_physic_beams(self, beams):
         for beam in beams:            points = self.points_to_pygame(beam.get_points())
             self.draw_physic_poly(points,(0,255,0))
-            self.logger.debug(points)
+            #self.logger.debug(points)
+
+    def draw_grid(self):
+        
+        for i in range(-10000,10000,100):
+            pX = self.xverschiebung + i * self.zoomfactor
+            if pX > 0 and pX < conf.SCREEN_CONFIG.SCREEN_W:
+                self.rects.append(pygame.draw.line(self.screen, \
+                                (0,0,0), \
+                                (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),2 ))
+                #for j in range (1, 10, 2):
+                 #   X = pX - j * self.zoomfactor
+                  #  pygame.draw.line(self.screen, \
+                   #                 (0,0,0), \
+                    #                (X ,0),(X,conf.SCREEN_CONFIG.SCREEN_H),1 )
+        for i in range(-10000,10000,100):
+            pY = self.yverschiebung + i * self.zoomfactor
+            if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
+                self.rects.append(pygame.draw.line(self.screen, \
+                                (0,0,0), \
+                                (0,pY),(conf.SCREEN_CONFIG.SCREEN_W,pY),2 ))
+
+        for i in range(-10000,10000,10):
+            pX = self.xverschiebung + i * self.zoomfactor
+            if pX > 0 and pX < conf.SCREEN_CONFIG.SCREEN_W:
+                self.rects.append(pygame.draw.line(self.screen, \
+                                (0,0,0), \
+                                (pX,0),(pX,conf.SCREEN_CONFIG.SCREEN_H),1 ))
+                #for j in range (1, 10, 2):
+                 #   X = pX - j * self.zoomfactor
+                  #  pygame.draw.line(self.screen, \
+                   #                 (0,0,0), \
+                    #                (X ,0),(X,conf.SCREEN_CONFIG.SCREEN_H),1 )
+        for i in range(-10000,10000,10):
+            pY = self.yverschiebung + i * self.zoomfactor
+            if pY > 0 and pY < conf.SCREEN_CONFIG.SCREEN_H:
+                self.rects.append(pygame.draw.line(self.screen, \
+                                (0,0,0), \
+                                (0,pY),(conf.SCREEN_CONFIG.SCREEN_W,pY),1 ))
+
 
     def draw_physic_static(self, static_lines):
         for line in static_lines:
@@ -105,13 +166,16 @@ class DrawEngine:
                 conf.GAME_CONFIG.PYMUNK_SIZEY*self.zoomfactor))
         self.screen.blit(ns, (self.xverschiebung,self.yverschiebung))
 
-    def common_draw(self,beams,static):
+    def common_draw(self,beams,static,balls):
         self.clear_rects(self.rects)
         self.rects = []
-        #self.draw_physic_beams(beams)
-        #self.draw_physic_static(static)
-        self.clock.tick(conf.SCREEN_CONFIG.FRAMERATE)
+        self.draw_grid()
+        self.draw_physic_beams(beams)
+        self.draw_physic_static(static)
+        self.draw_balls(balls)
+        
     def flip(self):
+        self.clock.tick(conf.SCREEN_CONFIG.FRAMERATE)
         pygame.display.flip()
         
 class Pos:

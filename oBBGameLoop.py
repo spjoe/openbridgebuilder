@@ -73,6 +73,8 @@ class Game:
         beam = self.physicengine.add_poly(self.vertices)        
         self.beams.append(beam)
 
+        self.balls = []
+
         
 
         self.Change = False
@@ -108,7 +110,8 @@ class Game:
                 elif event.button == conf.INPUT_CONFIG.ZOOM_OUT_MOUSE:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
                 elif event.button == 1:
-				    self.physicengine.add_ball(event.pos)
+				    ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
+				    self.balls.append(ball)
 				    self.physicengine.add_poly(self.vertices2)
                 else:
                     self.common_event(event)
@@ -140,17 +143,13 @@ class Game:
         """Main Game Loop"""
         while not self.quit:
             self.GetInputfn()
-            #self.Movefn()
-            #self.CollisionDetectionfn()
-            #self.drawengine.common_draw(self.beams,self.walls)
-            self.drawengine.screen.fill((255,255,255))
-            self.drawengine.physicscreen.fill((70,70,70))
-            self.physicengine.update(400, 1)
             
-            self.physicengine.draw(self.drawengine.physicscreen)
-            self.drawengine.drawphysic(self.drawengine.physicscreen)
+            #self.drawengine.screen.fill((255,255,255))
+            self.drawengine.common_draw(self.beams,self.walls,self.balls)
+            self.physicengine.update(60, 5)
 
-            pygame.display.flip()
+
+            self.drawengine.flip()
             
             pygame.display.set_caption("elements: %i | fps: %s" % 
                 (self.physicengine.get_element_count(), 
