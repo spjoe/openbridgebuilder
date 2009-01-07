@@ -55,8 +55,8 @@ class DrawEngine:
         self.rects = []
 
     def translate(self,rel):
-        self.xverschiebung += rel[0]
-        self.yverschiebung += rel[1]
+        self.xverschiebung += rel[0] 
+        self.yverschiebung += rel[1] 
 
     def zoom(self, delta, pos):
         if delta < 0 and self.zoomfactor <= 0.4:
@@ -69,10 +69,10 @@ class DrawEngine:
 
     def draw_catchpoint(self,catchpoint):
         # Get Ball Infos
-	    r = 10 * self.zoomfactor
-	    p = self.position_to_pygame(catchpoint.body.position)
+        r = 10 * self.zoomfactor
+        p = self.position_to_pygame(catchpoint.body.position)
 
-	    self.rects.append(pygame.draw.circle(self.screen, (0,0,255), p, int(r), 3))
+        self.rects.append(pygame.draw.circle(self.screen, (0,0,255), p, int(r), 3))
     def draw_line(self, pos1, pos2):
         posf = self.position_to_pygame(Pos(pos1[0],pos1[1]))
         poss = self.position_to_pygame(Pos(pos2[0],pos2[1]))
@@ -80,18 +80,18 @@ class DrawEngine:
 
     def draw_balls(self, balls, width=3):
         for shape in balls:
-			# Get Ball Infos
-			r = shape.radius * self.zoomfactor
-			p = self.position_to_pygame(shape.body.position)
-			rot = shape.body.rotation_vector
-		
-			# Draw Ball
-			#p = int(), int(self.flipy(v.y))
-			self.rects.append(pygame.draw.circle(self.screen, shape.color, p, int(r), width))
-	
-			# Draw Rotation Vector
-			p2 = Vec2d(rot.x, -rot.y) * r * 0.9
-			pygame.draw.aaline(self.screen, shape.color2, p, p+p2, 2)
+            # Get Ball Infos
+            r = shape.radius * self.zoomfactor
+            p = self.position_to_pygame(shape.body.position)
+            rot = shape.body.rotation_vector
+        
+            # Draw Ball
+            #p = int(), int(self.flipy(v.y))
+            self.rects.append(pygame.draw.circle(self.screen, shape.color, p, int(r), width))
+    
+            # Draw Rotation Vector
+            p2 = Vec2d(rot.x, -rot.y) * r * 0.9
+            pygame.draw.aaline(self.screen, shape.color2, p, p+p2, 2)
 
     def position_to_pygame(self,p):
         """Small hack to convert pymunk to pygame coordinates"""

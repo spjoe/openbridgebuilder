@@ -436,7 +436,7 @@ class PhysicEngine:
     def add_achse(self, pos,static = True,radius=5.0, friction=1.0, elasticity=0.1, mass=inf, inertia=inf):
         
         if static == False:
-            mass = 0.01 * (radius * radius * pi)
+            mass = 0.1 * (radius * radius * pi)
             #mass = 0
             interia = 10
         body = pm.Body(mass, inertia)
@@ -447,7 +447,7 @@ class PhysicEngine:
         shape.friction = friction
         shape.elasticity = elasticity
         
-        shape.color = self.get_color()
+        shape.color = (255,0,0)
         shape.color2 = self.get_color()
 
         # Append to Space

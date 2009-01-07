@@ -57,31 +57,12 @@ class Game:
         self.physicengine = oBBPhysicEngine.PhysicEngine(conf.GAME_CONFIG.GRAVITY)
         self.physicengine.set_info("Test")
 
-        ### Testobjekte
-        self.walls = []
-
-        wall = self.physicengine.add_wall((111.0, 280.0), (407.0, 300.0))
-        self.walls.append(wall)
-        wall = self.physicengine.add_wall((407.0, 300.0), (407.0, 200.0))
-        self.walls.append(wall)
-
-
-        self.beams = []
-
-        self.vertices = [(10.0, 30.0),(10.0,60.0),(100.0,60.0),(100.0,30.0),(10.0, 30.0)]
-        self.vertices2 = [(10.0, 30.0), (100.0,30.0),(100.0,60.0),(10.0,60.0),(10.0, 30.0)]
-        #vertices2 = [(100.0, 330.0),(100.0,300.0),(200.0,300.0),(200.0,330.0),(100.0,330.0)]
-        #beam = self.physicengine.add_poly(self.vertices2)        
-        #self.beams.append(beam)
-
-        self.balls = []
         self.load_level_1()
 
         self.Change = False
         self.GetInputfn = self.CommonGetInput
-        #self.Movefn = self.CommonMove
-        #self.CollisionDetectionfn = self.CommonCollisonDetection
-        #self.Drawfn = self.CommonDraw
+        self.Drawfn = self.GameDraw
+        self.Movefn = self.GameMove
 
     def clear(self):
         self.walls = []
@@ -94,17 +75,21 @@ class Game:
    
     def load_level_1(self):
         self.clear()
-        #wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
-        #self.walls.append(wall)
-        #wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 0.0))
-        #self.walls.append(wall)
-        #wall = self.physicengine.add_wall((100.0, 0.0), (250.0, 50.0))
-        #self.walls.append(wall)
-        #wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
-        #self.walls.append(wall)
+        wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, -100.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((100.0, -100.0), (250.0, 50.0))
+        self.walls.append(wall)
+        wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
+        self.walls.append(wall)
         achse = self.physicengine.add_achse((-50.0, 50.0))
         self.achsen.append(achse)
         achse = self.physicengine.add_achse((250.0, 50.0))
+        self.achsen.append(achse)
+        achse = self.physicengine.add_achse((20.0, -20.0))
+        self.achsen.append(achse)
+        achse = self.physicengine.add_achse((180.0, -20.0))
         self.achsen.append(achse)
 
     
@@ -135,8 +120,6 @@ class Game:
                 elif event.button == 1:
                     #ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
                     #self.balls.append(ball)
-                    #beam = self.physicengine.add_poly(self.vertices2)
-                    #self.beams.append(beam)
                     tmp = self.drawengine.over_achse(event.pos, self.achsen)
                     if tmp != None:
                         self.drawbeam = True
@@ -146,15 +129,13 @@ class Game:
                     self.common_event(event)
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1 and self.drawbeam:
-                    #endpos = self.drawengine.position_to_pymunk(event.pos)
                     endpos = self.drawengine.nearstpos(event.pos)
                     p2 = self.anpos[0] , self.anpos[1] + 5
                     p3 = endpos[0], endpos[1] + 5
                     beam = self.physicengine.add_poly((self.anpos, p2, p3 , endpos))
                     self.beams.append(beam)
                     self.physicengine.add_beam_to_achse(beam,self.curachse)
-                    #pyendpos = self.drawengine.position_to_pygame(endpos)
-                    pyendpos = event.pos
+                    pyendpos = self.drawengine.position_to_pygame(Vec2d(endpos[0],endpos[1]))
                     tmp = self.drawengine.over_achse(pyendpos, self.achsen)
                     if tmp != None:
                         self.physicengine.add_beam_to_achse(beam,tmp)
@@ -203,26 +184,27 @@ class Game:
             return
         self.logger.debug("Change:::")
 
+
+    def GameDraw(self):
+        self.drawengine.common_draw(self.beams,self.walls,self.balls, self.achsen)
+        if self.lastcatchpoint != None:
+            self.drawengine.draw_catchpoint(self.lastcatchpoint)  
+        if self.drawline:
+            self.drawengine.draw_line(self.anpos, self.endpos)
+        pygame.display.set_caption("elements: %i | fps: %s" % 
+                (self.physicengine.get_element_count(), 
+                str(int(self.drawengine.clock.get_fps()))))
+        self.drawengine.flip() 
+
+    def GameMove(self):
+        self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
+
     def run(self):
         """Main Game Loop"""
         while not self.quit:
             self.GetInputfn()
-            
-            self.drawengine.common_draw(self.beams,self.walls,self.balls, self.achsen)
-            if self.lastcatchpoint != None:
-                self.drawengine.draw_catchpoint(self.lastcatchpoint)  
-            if self.drawline:
-                self.drawengine.draw_line(self.anpos, self.endpos)         
-            self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
-            
-            self.drawengine.flip()
-            
-            pygame.display.set_caption("elements: %i | fps: %s" % 
-                (self.physicengine.get_element_count(), 
-                str(int(self.drawengine.clock.get_fps()))))
-
-            
-
-            #self.Changefn()
+            self.Drawfn()
+            self.Movefn()
+            self.Changefn()
             
         pygame.quit()
