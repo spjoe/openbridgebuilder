@@ -94,14 +94,14 @@ class Game:
    
     def load_level_1(self):
         self.clear()
-        wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
-        self.walls.append(wall)
-        wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 0.0))
-        self.walls.append(wall)
-        wall = self.physicengine.add_wall((100.0, 0.0), (250.0, 50.0))
-        self.walls.append(wall)
-        wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
-        self.walls.append(wall)
+        #wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
+        #self.walls.append(wall)
+        #wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 0.0))
+        #self.walls.append(wall)
+        #wall = self.physicengine.add_wall((100.0, 0.0), (250.0, 50.0))
+        #self.walls.append(wall)
+        #wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
+        #self.walls.append(wall)
         achse = self.physicengine.add_achse((-50.0, 50.0))
         self.achsen.append(achse)
         achse = self.physicengine.add_achse((250.0, 50.0))
@@ -141,15 +141,28 @@ class Game:
                     if tmp != None:
                         self.drawbeam = True
                         self.anpos = tmp.body.position
+                        self.curachse = tmp
                 else:
                     self.common_event(event)
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1 and self.drawbeam:
-                    endpos = self.drawengine.position_to_pymunk(event.pos)
+                    #endpos = self.drawengine.position_to_pymunk(event.pos)
+                    endpos = self.drawengine.nearstpos(event.pos)
                     p2 = self.anpos[0] , self.anpos[1] + 5
                     p3 = endpos[0], endpos[1] + 5
                     beam = self.physicengine.add_poly((self.anpos, p2, p3 , endpos))
                     self.beams.append(beam)
+                    self.physicengine.add_beam_to_achse(beam,self.curachse)
+                    #pyendpos = self.drawengine.position_to_pygame(endpos)
+                    pyendpos = event.pos
+                    tmp = self.drawengine.over_achse(pyendpos, self.achsen)
+                    if tmp != None:
+                        self.physicengine.add_beam_to_achse(beam,tmp)
+                    else:
+                        achse = self.physicengine.add_achse(endpos, False)
+                        self.physicengine.add_beam_to_achse(beam,achse)
+                        self.achsen.append(achse)
+                    
                     self.drawbeam = False
                     self.drawline = False
                     

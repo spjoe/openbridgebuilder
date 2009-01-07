@@ -428,8 +428,17 @@ class PhysicEngine:
 
         return True
 
-    def add_achse(self, pos,radius=5.0, friction=1.0, elasticity=0.1, mass=inf, inertia=inf):
+    def add_beam_to_achse(self,beam,achse):
+        x = beam.body.position.x - achse.body.position.x
+        y = beam.body.position.y - achse.body.position.y 
+        self.space.add( pm.PinJoint(achse.body,beam.body, Vec2d(0,0), Vec2d(-x,-y)) )
+
+    def add_achse(self, pos,static = True,radius=5.0, friction=1.0, elasticity=0.1, mass=inf, inertia=inf):
         
+        if static == False:
+            mass = 0.01 * (radius * radius * pi)
+            #mass = 0
+            interia = 10
         body = pm.Body(mass, inertia)
         body.position = self.Vec2df(pos)
         
@@ -442,7 +451,10 @@ class PhysicEngine:
         shape.color2 = self.get_color()
 
         # Append to Space
-        self.space.add_static( shape)
+        if static:
+            self.space.add_static( shape)
+        else:
+            self.space.add(body, shape)
         self.element_count += 1
         return shape
 
