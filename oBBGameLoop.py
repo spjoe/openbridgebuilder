@@ -43,6 +43,7 @@ class Game:
         self.quit = False
         self.simulate = False
         self.drawbeam = False
+        self.drawline = False
 
         #Draw Engine
         size = conf.SCREEN_CONFIG.SCREEN_W, conf.SCREEN_CONFIG.SCREEN_H
@@ -81,20 +82,23 @@ class Game:
         #self.Movefn = self.CommonMove
         #self.CollisionDetectionfn = self.CommonCollisonDetection
         #self.Drawfn = self.CommonDraw
+
     def clear(self):
         self.walls = []
         self.beams = []
         self.balls = []
         self.achsen = []
+        self.catchpoints = []
+        self.lastcatchpoint = None
         self.physicengine.clear()
    
     def load_level_1(self):
         self.clear()
         wall = self.physicengine.add_wall((-10000.0, 50.0), (-50.0, 50.0))
         self.walls.append(wall)
-        wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 100.0))
+        wall = self.physicengine.add_wall((-50.0, 50.0), (100.0, 0.0))
         self.walls.append(wall)
-        wall = self.physicengine.add_wall((100.0, 100.0), (250.0, 50.0))
+        wall = self.physicengine.add_wall((100.0, 0.0), (250.0, 50.0))
         self.walls.append(wall)
         wall = self.physicengine.add_wall((250.0, 50.0), (10000.0, 50.0))
         self.walls.append(wall)
@@ -102,6 +106,7 @@ class Game:
         self.achsen.append(achse)
         achse = self.physicengine.add_achse((250.0, 50.0))
         self.achsen.append(achse)
+
     
     def coll_func(self,shapeA, shapeB, contacts, normal_coef, screen):
         """Draw a circle at the contact, with larger radius for greater collisions"""
@@ -128,12 +133,14 @@ class Game:
                 elif event.button == conf.INPUT_CONFIG.ZOOM_OUT_MOUSE:
                     self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
                 elif event.button == 1:
-                    ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
-                    self.balls.append(ball)
+                    #ball = self.physicengine.add_ball(self.drawengine.position_to_pymunk(event.pos))
+                    #self.balls.append(ball)
                     #beam = self.physicengine.add_poly(self.vertices2)
                     #self.beams.append(beam)
-                    self.drawbeam = True
-                    self.anpos = self.drawengine.position_to_pymunk(event.pos)
+                    tmp = self.drawengine.over_achse(event.pos, self.achsen)
+                    if tmp != None:
+                        self.drawbeam = True
+                        self.anpos = tmp.body.position
                 else:
                     self.common_event(event)
             elif event.type == MOUSEBUTTONUP:
@@ -143,17 +150,32 @@ class Game:
                     p3 = endpos[0], endpos[1] + 5
                     beam = self.physicengine.add_poly((self.anpos, p2, p3 , endpos))
                     self.beams.append(beam)
+                    self.drawbeam = False
+                    self.drawline = False
                     
             elif event.type == MOUSEMOTION:
                 if event.buttons[2] == 1 or event.buttons[1] == 1:
                     self.drawengine.translate(event.rel)
+                elif event.buttons[0] == 1 and self.drawbeam:
+                    pos = self.drawengine.nearstpos(event.pos)
+                    self.drawline = True
+                    self.endpos = pos
+                    
                 else:
-                    self.common_event(event)
+                    tmp = self.drawengine.over_achse(event.pos, self.achsen)
+                    if tmp != None:
+                        if self.lastcatchpoint == None:
+                            self.catchpoints.append(tmp)
+                            self.lastcatchpoint = tmp
+                    else:
+                        if self.lastcatchpoint != None:
+                            self.catchpoints.remove(self.lastcatchpoint)
+                            self.lastcatchpoint = None
             elif event.type == KEYDOWN:
                 if event.key == conf.INPUT_CONFIG.ZOOM_IN_KEY:
-                    self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_IN,event.pos)
+                    self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_IN * 5,(0,0))
                 elif event.key == conf.INPUT_CONFIG.ZOOM_OUT_KEY:
-                    self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT,event.pos)
+                    self.drawengine.zoom(conf.INPUT_CONFIG.DeltaZOOM_OUT * 5,(0,0))
                 elif event.key == conf.INPUT_CONFIG.SIMULATE_ON_OFF:
                     self.physicengine.run_physics = not self.physicengine.run_physics
                 elif event.key == conf.INPUT_CONFIG.START_TRAIN:
@@ -174,8 +196,12 @@ class Game:
             self.GetInputfn()
             
             self.drawengine.common_draw(self.beams,self.walls,self.balls, self.achsen)
+            if self.lastcatchpoint != None:
+                self.drawengine.draw_catchpoint(self.lastcatchpoint)  
+            if self.drawline:
+                self.drawengine.draw_line(self.anpos, self.endpos)         
             self.physicengine.update(conf.SCREEN_CONFIG.FRAMERATE, conf.GAME_CONFIG.PYMUNK_STEPS)
-
+            
             self.drawengine.flip()
             
             pygame.display.set_caption("elements: %i | fps: %s" % 

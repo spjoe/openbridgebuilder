@@ -293,7 +293,7 @@ class PhysicEngine:
             Parameter: y == int()
             Returns: int(y_new)
         """
-        return -y+self.display_height
+        return y#-y+self.display_height
     
     def Vec2df(self, pos):
         """ pos -> Vec2d (with flipped y)
@@ -427,6 +427,7 @@ class PhysicEngine:
 #            pygame.draw.lines(surface, shape.color, False, self.points, 2)
 
         return True
+
     def add_achse(self, pos,radius=5.0, friction=1.0, elasticity=0.1, mass=inf, inertia=inf):
         
         body = pm.Body(mass, inertia)
@@ -441,7 +442,7 @@ class PhysicEngine:
         shape.color2 = self.get_color()
 
         # Append to Space
-        self.space.add(body, shape)
+        self.space.add_static( shape)
         self.element_count += 1
         return shape
 
