@@ -119,7 +119,7 @@ class PhysicEngine:
         self.init_colors()
         
         # This string will be blit in the top left corner at each update
-        self.set_info("")
+        #self.set_info("")
         
         # Get Screen Size
         self.autoset_screen_size()
@@ -176,23 +176,6 @@ class PhysicEngine:
         """
         self.show_help = not self.show_help
 
-    def set_info(self, txt):
-        """ Create the Surface for the Infotext at the Upper Left Corner 
-            Parameter: txt == str()
-        """
-        txt = txt.splitlines()
-        self.infostr_surface = pygame.Surface((500, 800))
-        self.infostr_surface.fill((255,255,255))
-        self.infostr_surface.set_colorkey((255,255,255))
-        
-        y = 0
-        for line in txt:
-            if len(line.strip()) == 0:
-                y += 16
-            else:
-                text = self.font.render(line, 1,THECOLORS["black"])
-                self.infostr_surface.blit(text, (0,y))
-                y += 26
     
     def messagebox_show(self, txt, delay=None):
         """ Add a message box at the center on drawing 
@@ -531,8 +514,23 @@ class PhysicEngine:
         self.space.add(body, shape)
         self.element_count += 1
         return shape
+
+    def add_beam(self, pos1, pos2, density = 0.1, friction=2.0,elasticity = 0.1):
+
+        dx = 0
+        dy = 2.5
+
+        p1 = pos1[0] - dx, pos1[1] - dy
+        p2 = pos1[0] + dx, pos1[1] + dy
+
+        p3 = pos2[0] + dx, pos2[1] + dy
+        p4 = pos2[0] - dx, pos2[1] - dy
+
+        beam = self.add_poly([p1, p2, p3 , p4],density,friction,elasticity)
         
-    def add_poly(self, points, density=0.1, friction=2.0, elasticity=0.3):
+        return beam
+        
+    def add_poly(self, points, density=0.1, friction=2.0, elasticity=0.9):
         """ Mass will be calculated out of mass = A * density 
             Parameter: points == [(int(x), int(y)), (int(x), int(y)), ...]
             Optional: See #physical_parameters

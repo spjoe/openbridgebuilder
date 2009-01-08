@@ -51,6 +51,12 @@ class DrawEngine:
         self.screen.blit(self.background, self.background.get_rect())
 
         self.clock = pygame.time.Clock()
+        self.show_help = True
+
+        self.font = pygame.font.Font(None, 32)
+        self.font_xxl = pygame.font.Font(None, 38)
+    
+        
 
         self.rects = []
 
@@ -66,6 +72,24 @@ class DrawEngine:
     def clear(self):
         self.screen.fill([0,0,0])
         self.flip()
+
+    def set_info(self, txt):
+        """ Create the Surface for the Infotext at the Upper Left Corner 
+            Parameter: txt == str()
+        """
+        txt = txt.splitlines()
+        self.infostr_surface = pygame.Surface((500, 800))
+        self.infostr_surface.fill((255,255,255))
+        self.infostr_surface.set_colorkey((255,255,255))
+        
+        y = 0
+        for line in txt:
+            if len(line.strip()) == 0:
+                y += 16
+            else:
+                text = self.font.render(line, 1,THECOLORS["black"])
+                self.infostr_surface.blit(text, (0,y))
+                y += 26
 
     def draw_catchpoint(self,catchpoint):
         # Get Ball Infos
@@ -200,6 +224,8 @@ class DrawEngine:
         self.draw_physic_static(static)
         self.draw_balls(balls)
         self.draw_balls(achsen, 0)
+        if self.show_help:
+            self.rects.append(self.screen.blit(self.infostr_surface, (10,10)))
 
     def over_achse(self,pos,achsen):
         for achse in achsen:

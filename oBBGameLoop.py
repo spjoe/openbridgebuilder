@@ -30,6 +30,7 @@ import logging
 import oBBPhysicEngine
 import oBBDrawEngine
 import oBBConfig as conf
+from os.path import isfile
 
 ###############################################################################
 #############################Game Class Muhaha!################################
@@ -51,11 +52,14 @@ class Game:
         xver = conf.GAME_CONFIG.XVERSCHIEBUNG
         yver = conf.GAME_CONFIG.YVERSCHIEBUNG
         self.drawengine = oBBDrawEngine.DrawEngine(size,zoom,xver,yver,self)
+        self.drawengine.set_info("LMB: draw Beam\nRMB: move Background\n\
+                                scrollupdown: zoom\nr: Runs simulation\n\
+                                t: start train\ns: Screenshot\nh: toggle this help")
         
 
         ### Physics Engine
         self.physicengine = oBBPhysicEngine.PhysicEngine(conf.GAME_CONFIG.GRAVITY)
-        self.physicengine.set_info("Test")
+        #self.physicengine.set_info("Test")
 
         self.load_level_1()
 
@@ -72,6 +76,7 @@ class Game:
         self.catchpoints = []
         self.lastcatchpoint = None
         self.physicengine.clear()
+        self.filecounter = 0
    
     def load_level_1(self):
         self.clear()
@@ -130,9 +135,7 @@ class Game:
             elif event.type == MOUSEBUTTONUP:
                 if event.button == 1 and self.drawbeam:
                     endpos = self.drawengine.nearstpos(event.pos)
-                    p2 = self.anpos[0] , self.anpos[1] + 5
-                    p3 = endpos[0], endpos[1] + 5
-                    beam = self.physicengine.add_poly((self.anpos, p2, p3 , endpos))
+                    beam = self.physicengine.add_beam(self.anpos, endpos)
                     self.beams.append(beam)
                     self.physicengine.add_beam_to_achse(beam,self.curachse)
                     pyendpos = self.drawengine.position_to_pygame(Vec2d(endpos[0],endpos[1]))
@@ -174,10 +177,36 @@ class Game:
                     self.physicengine.run_physics = not self.physicengine.run_physics
                 elif event.key == conf.INPUT_CONFIG.START_TRAIN:
                     self.starttrain = True
+
+                elif event.key == pygame.K_s:
+                    self.screenshot("blatest")
+                elif event.key == pygame.K_h:
+                    self.drawengine.show_help = not self.drawengine.show_help
                 else:
                     self.common_event(event)
             else:
                 self.common_event(event)
+
+    def screenshot(self, filename='screenshot', ext='png'):
+            
+        if filename[-4:-3] == ".": filename = filename[:-4]
+        elif filename[-3:-2] == ".": filename = filename[:-3]
+
+        fn = self.save_surface(self.drawengine.screen, "snapshots/%s" % filename, ext)
+        self.logger.info("Saved as: %s" % fn)
+
+
+    def save_surface(self, surface, fn='surface', ext='png'):
+
+        fullname = None
+        while fullname == None or isfile(fullname):
+            self.filecounter += 1
+            z = "0" * (5-len(str(self.filecounter)))
+            fullname = "%s_%s%i.%s" % (fn, z, self.filecounter, ext)
+            
+        pygame.image.save(surface, fullname)
+        return fullname
+
 
     def Changefn(self):
         if not self.Change:
