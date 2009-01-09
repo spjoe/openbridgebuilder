@@ -520,11 +520,11 @@ class PhysicEngine:
         dx = 0
         dy = 2.5
 
-        p1 = pos1[0] - dx, pos1[1] - dy
-        p2 = pos1[0] + dx, pos1[1] + dy
+        p1 = pos1[0] - dx + 3, pos1[1] - dy
+        p2 = pos1[0] + dx + 3, pos1[1] + dy
 
-        p3 = pos2[0] + dx, pos2[1] + dy
-        p4 = pos2[0] - dx, pos2[1] - dy
+        p3 = pos2[0] + dx - 3, pos2[1] + dy
+        p4 = pos2[0] - dx - 3, pos2[1] - dy
 
         beam = self.add_poly([p1, p2, p3 , p4],density,friction,elasticity)
         

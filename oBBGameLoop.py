@@ -53,8 +53,8 @@ class Game:
         yver = conf.GAME_CONFIG.YVERSCHIEBUNG
         self.drawengine = oBBDrawEngine.DrawEngine(size,zoom,xver,yver,self)
         self.drawengine.set_info("LMB: draw Beam\nRMB: move Background\n\
-                                scrollupdown: zoom\nr: Runs simulation\n\
-                                t: start train\ns: Screenshot\nh: toggle this help")
+scrollupdown: zoom\nr: Runs simulation\n\
+t: start train\ns: Screenshot\nh: toggle this help")
         
 
         ### Physics Engine

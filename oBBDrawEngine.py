@@ -79,15 +79,15 @@ class DrawEngine:
         """
         txt = txt.splitlines()
         self.infostr_surface = pygame.Surface((500, 800))
-        self.infostr_surface.fill((255,255,255))
-        self.infostr_surface.set_colorkey((255,255,255))
+        self.infostr_surface.fill((0,0,0))
+        self.infostr_surface.set_colorkey((0,0,0))
         
         y = 0
         for line in txt:
             if len(line.strip()) == 0:
                 y += 16
             else:
-                text = self.font.render(line, 1,THECOLORS["black"])
+                text = self.font.render(line, 1,(240,240,240))
                 self.infostr_surface.blit(text, (0,y))
                 y += 26
 
