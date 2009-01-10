@@ -46,6 +46,8 @@ from random import shuffle
 from threading import Thread
 from traceback import print_exc
 
+import math
+
 # infinite ~ 10^100 :)
 inf = 1e100
         
@@ -517,14 +519,62 @@ class PhysicEngine:
 
     def add_beam(self, pos1, pos2, density = 0.1, friction=2.0,elasticity = 0.1):
 
-        dx = 0
-        dy = 2.5
+        
 
-        p1 = pos1[0] - dx + 3, pos1[1] - dy
-        p2 = pos1[0] + dx + 3, pos1[1] + dy
+        v = pos2 - pos1
+        length = math.hypot(v[0],v[1])
+        if v[0] == 0 and v[1] == 0:
+            return None        
+        elif v[1] == 0 and v[0] > 0:
+            beta = 0
+            gamma = 0
+        elif v[1] == 0 and v[0] < 0:
+            beta = 0
+            gamma = 180
+        elif v[0] == 0 and v[1] > 0:
+            beta = 0
+            gamma = 90
+        elif v[0] == 0 and v[1] < 0:
+            beta = 0
+            gamma = 270
+        elif v[0] > 0 and v[1] > 0:
+            beta = math.degrees(math.sin(v[0]/v[1]))
+            gamma = abs(beta)
+        elif v[0] < 0 and v[1] > 0:
+            beta = math.degrees(math.sin(v[0]/v[1]))
+            gamma = 90 + abs(beta)
+        elif v[0] < 0 and v[1] < 0:
+            beta = math.degrees(math.sin(v[0]/v[1]))
+            gamma = 180 + abs(beta)
+        elif v[0] > 0 and v[1] < 0:
+            beta = math.degrees(math.sin(v[0]/v[1]))
+            gamma = 270 + abs(beta)
 
-        p3 = pos2[0] + dx - 3, pos2[1] + dy
-        p4 = pos2[0] - dx - 3, pos2[1] - dy
+        self.logger.debug("Pos1 " + str(pos1))
+        self.logger.debug("Pos2 " + str(pos2))
+        
+        self.logger.debug("Vector " + str(v) )
+        self.logger.debug("Laenge " + str(length) )
+        self.logger.debug("beta " + str(beta) )
+        self.logger.debug("gamma " + str(gamma) )
+        if gamma == 270 or gamma == 90:
+            dx = 2.5
+            dy = 0
+        else:
+            dx = 0
+            dy = 2.5
+
+        p1 = pos1[0] - dx , pos1[1] - dy
+        p2 = pos1[0] + dx , pos1[1] + dy
+
+        p3 = pos2[0] + dx , pos2[1] + dy
+        p4 = pos2[0] - dx , pos2[1] - dy
+
+        p1 = pos1[0] - dx , pos1[1] - dy
+        p2 = pos1[0] + dx , pos1[1] + dy
+
+        p3 = pos2[0] + dx , pos2[1] + dy
+        p4 = pos2[0] - dx , pos2[1] - dy
 
         beam = self.add_poly([p1, p2, p3 , p4],density,friction,elasticity)
         
